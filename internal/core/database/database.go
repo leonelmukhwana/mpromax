@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"time"
 
@@ -10,45 +9,33 @@ import (
 )
 
 func ConnectDB() (*pgxpool.Pool, error) {
-	// Format: postgres://username:password@localhost:5432/database_name
-dsn := os.Getenv("DATABASE_URL")
 
-    // Fallback to manual construction if DATABASE_URL isn't set
-    if dsn == "" {
-        dsn = fmt.Sprintf(
-            "postgres://%s:%s@%s:%s/%s?sslmode=require",
-            os.Getenv("DB_USER"),
-            os.Getenv("DB_PASS"),
-            os.Getenv("DB_HOST"),
-            os.Getenv("DB_PORT"),
-            os.Getenv("DB_NAME"),
-        )
-    }
+	// 🔥 MUST come from Render env
+	dsn := os.Getenv("DATABASE_URL")
 
-  
-
-	config, err := pgxpool.ParseConfig(dsn)
-	if err != nil {
-		return nil, err
+	// Safety check (helps debugging)
+	if dsn == "" {
+		panic("DATABASE_URL is not set")
 	}
 
-	config.MaxConns = 10
-
-	// MinConns: Connections to keep open even when idle
-	config.MinConns = 2
-
-	// MaxConnIdleTime: Close connections that haven't been used for a while
-	config.MaxConnIdleTime = 5 * time.Minute
-
-	pool, err := pgxpool.NewWithConfig(context.Background(), config)
+	// Create pool (SIMPLE + RELIABLE for Render)
+	pool, err := pgxpool.New(context.Background(), dsn)
 	if err != nil {
 		return nil, err
 	}
 
 	// Test connection
-	if err := pool.Ping(context.Background()); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := pool.Ping(ctx); err != nil {
 		return nil, err
 	}
+
+	// Optional tuning (production safe defaults)
+	pool.Config().MaxConns = 10
+	pool.Config().MinConns = 2
+	pool.Config().MaxConnIdleTime = 5 * time.Minute
 
 	return pool, nil
 }

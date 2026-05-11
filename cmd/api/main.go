@@ -73,7 +73,7 @@ func main() {
 
 	// 4. Run migrations BEFORE connecting the pool
 	// This ensures the schema is ready before services start up
-	database.RunMigrations(dbURL)
+	//database.RunMigrations(dbURL)
 
 	// 5. Initialize Database Connection Pool
 	dbPool, err := database.ConnectDB()

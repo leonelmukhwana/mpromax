@@ -3,6 +3,7 @@ configs/*.json
 # Local environment variables
 .env
 *.env
+firebase-service-key.json
 
 # Binaries and build files
 /bin

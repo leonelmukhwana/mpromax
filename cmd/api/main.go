@@ -74,7 +74,7 @@ func main() {
 	//database.RunMigrations(dbURL)
 
 	// 5. Initialize Database Connection Pool
-	dbPool, err := database.ConnectDB()
+	dbPool, err := database.ConnectDB(dbURL)
 	if err != nil {
 		log.Fatalf("CRITICAL: Could not connect to DB: %v", err)
 	}

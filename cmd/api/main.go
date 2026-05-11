@@ -68,15 +68,19 @@ func main() {
 	}
 
 	// 3. Build the Connection String for Migrations and pgx
-	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
-		dbUser, dbPass, dbHost, dbPort, dbName, sslMode)
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		dbURL = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+			os.Getenv("DB_USER"), os.Getenv("DB_PASS"), 
+			os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"))
+	}
 
 	// 4. Run migrations BEFORE connecting the pool
 	// This ensures the schema is ready before services start up
 	//database.RunMigrations(dbURL)
 
 	// 5. Initialize Database Connection Pool
-	dbPool, err := database.ConnectDB()
+	dbPool, err := database.ConnectDB(dbURL)
 	if err != nil {
 		log.Fatalf("CRITICAL: Could not connect to DB: %v", err)
 	}

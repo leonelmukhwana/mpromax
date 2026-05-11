@@ -11,14 +11,21 @@ import (
 
 func ConnectDB() (*pgxpool.Pool, error) {
 	// Format: postgres://username:password@localhost:5432/database_name
-dsn := fmt.Sprintf(
-	"postgres://%s:%s@%s:%s/%s?sslmode=require",
-	os.Getenv("DB_USER"),
-	os.Getenv("DB_PASS"),
-	os.Getenv("DB_HOST"),
-	os.Getenv("DB_PORT"),
-	os.Getenv("DB_NAME"),
-)
+dsn := os.Getenv("DATABASE_URL")
+
+    // Fallback to manual construction if DATABASE_URL isn't set
+    if dsn == "" {
+        dsn = fmt.Sprintf(
+            "postgres://%s:%s@%s:%s/%s?sslmode=require",
+            os.Getenv("DB_USER"),
+            os.Getenv("DB_PASS"),
+            os.Getenv("DB_HOST"),
+            os.Getenv("DB_PORT"),
+            os.Getenv("DB_NAME"),
+        )
+    }
+
+  
 
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {

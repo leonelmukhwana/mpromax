@@ -51,36 +51,30 @@ func main() {
 	}
 
 	// 2. Setup Database Variables with proper fallbacks for hosting
-	dbUser := os.Getenv("DB_USER")
-	dbPass := os.Getenv("DB_PASS")
-	dbName := os.Getenv("DB_NAME")
-	dbHost := os.Getenv("DB_HOST")
-	if dbHost == "" {
-		dbHost = "localhost"
-	}
-	dbPort := os.Getenv("DB_PORT")
-	if dbPort == "" {
-		dbPort = "5432"
-	}
-	sslMode := os.Getenv("DB_SSL_MODE")
-	if sslMode == "" {
-		sslMode = "disable" // Use "require" on platforms like Render
-	}
+		dbURL := os.Getenv("DATABASE_URL")
 
-	// 3. Build the Connection String for Migrations and pgx
-	dbURL := os.Getenv("DATABASE_URL")
-	if dbURL == "" {
-		dbURL = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
-			os.Getenv("DB_USER"), os.Getenv("DB_PASS"), 
-			os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"))
-	}
+		// 2. Fallback for Local Development ONLY if DATABASE_URL is missing
+		if dbURL == "" {
+			dbUser := os.Getenv("DB_USER")
+			dbPass := os.Getenv("DB_PASS")
+			dbName := os.Getenv("DB_NAME")
+			dbHost := os.Getenv("DB_HOST")
+			if dbHost == "" { dbHost = "localhost" }
+			dbPort := os.Getenv("DB_PORT")
+			if dbPort == "" { dbPort = "5432" }
+			sslMode := os.Getenv("DB_SSL_MODE")
+			if sslMode == "" { sslMode = "disable" }
+
+			dbURL = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
+				dbUser, dbPass, dbHost, dbPort, dbName, sslMode)
+		}
 
 	// 4. Run migrations BEFORE connecting the pool
 	// This ensures the schema is ready before services start up
 	//database.RunMigrations(dbURL)
 
 	// 5. Initialize Database Connection Pool
-	dbPool, err := database.ConnectDB(dbURL)
+	dbPool, err := database.ConnectDB()
 	if err != nil {
 		log.Fatalf("CRITICAL: Could not connect to DB: %v", err)
 	}

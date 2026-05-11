@@ -1,0 +1,18 @@
+
+configs/*.json
+# Local environment variables
+.env
+*.env
+
+# Binaries and build files
+/bin
+/dist
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# OS files
+.DS_Store
+Thumbs.db
